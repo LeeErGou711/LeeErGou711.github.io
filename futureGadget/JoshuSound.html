@@ -6,7 +6,7 @@
     <title>Joshu Sound Player</title>
     <style>
         body {
-            font-family: 'Times New Roman', Times, serif; /* 将字体改为Times New Roman */
+            font-family: 'Times New Roman', Times, serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -15,7 +15,7 @@
             margin: 0;
             position: relative;
             overflow: hidden;
-            color: black; /* 将默认文字颜色改为黑色 */
+            color: black;
         }
 
         body::before {
@@ -67,22 +67,22 @@
             border: 1px solid #ccc;
             width: 100%;
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5); /* 搜索结果背景半透明 */
-            font-family: 'Times New Roman', Times, serif; /* 确保搜索结果文字使用Times New Roman */
+            background: rgba(255, 255, 255, 0.5);
+            font-family: 'Times New Roman', Times, serif;
         }
         audio {
             margin-top: 20px;
             width: 100%;
             max-width: 400px;
-            background: rgba(240, 240, 240, 0.5); /* 音频播放器背景半透明 */
+            background: rgba(240, 240, 240, 0.5);
         }
         button, input {
             padding: 10px;
             font-size: 16px;
-            background: rgba(240, 240, 240, 0.5); /* 按钮和输入框背景半透明 */
-            border: 1px solid rgba(240, 240, 240, 0.5); /* 半透明边框 */
-            color: black; /* 按钮和输入框文字颜色改为黑色 */
-            font-family: 'Times New Roman', Times, serif; /* 确保按钮和输入框文字使用Times New Roman */
+            background: rgba(240, 240, 240, 0.5);
+            border: 1px solid rgba(240, 240, 240, 0.5);
+            color: black;
+            font-family: 'Times New Roman', Times, serif;
         }
         input {
             width: 100%;
@@ -92,15 +92,15 @@
             cursor: pointer;
             padding: 5px;
             border-bottom: 1px solid #ccc;
-            background: rgba(240, 240, 240, 0.5); /* 搜索结果背景半透明 */
+            background: rgba(240, 240, 240, 0.5);
             color: black;
-            font-family: 'Times New Roman', Times, serif; /* 确保搜索结果项文字使用Times New Roman */
+            font-family: 'Times New Roman', Times, serif;
         }
         .search-result:hover {
             background-color: rgba(240, 240, 240, 0.5);
         }
         h1, p {
-            font-family: 'Times New Roman', Times, serif; /* 确保标题和段落文字使用Times New Roman */
+            font-family: 'Times New Roman', Times, serif;
         }
     </style>
 </head>
@@ -127,18 +127,16 @@
         const baseURL = "https://github.com/LeeErGou711/SteinsGate/raw/main/src/files/voice/CRS_voice/CRS_";
         const mp3Files = [];
         const subtitles = {};
-        let currentIndex = -1; // 初始化为 -1，确保播放正确
+        let currentIndex = -1;
 
         let isLooping = false;
         let isAutoPlaying = false;
 
-        // 生成文件名列表
         for (let i = 0; i <= 2888; i++) {
             const numStr = i.toString().padStart(4, '0');
             mp3Files.push(`${baseURL}${numStr}_converted.mp3`);
         }
 
-        // 从远程文本文件加载台词
         fetch('https://raw.githubusercontent.com/LeeErGou711/LeeErGou711.github.io/main/futureGadget/joshuTaici.txt')
             .then(response => response.text())
             .then(data => {
@@ -159,11 +157,13 @@
 
         function playNext() {
             currentIndex = (currentIndex + 1) % mp3Files.length;
+            console.log("Playing next sound, index: ", currentIndex); // 调试信息
             playCurrent();
         }
 
         function playLast() {
             currentIndex = (currentIndex - 1 + mp3Files.length) % mp3Files.length;
+            console.log("Playing last sound, index: ", currentIndex); // 调试信息
             playCurrent();
         }
 
@@ -177,7 +177,8 @@
             if (currentIndex >= 0) {
                 const selectedMP3 = mp3Files[currentIndex];
                 const fileNumber = selectedMP3.match(/CRS_(\d+)_converted\.mp3/)[1];
-                const subtitle = subtitles[fileNumber] || ' ';
+                const subtitle = subtitles[parseInt(fileNumber)] || ' ';
+                console.log("Playing current sound, file number: ", fileNumber, " subtitle: ", subtitle); // 调试信息
 
                 document.getElementById('audioPlayer').src = selectedMP3;
                 document.getElementById('audioPlayer').play();
