@@ -86,6 +86,10 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            displayEntries();
+        });
+
         function uploadEntry() {
             const entryText = document.getElementById('diaryEntry').value;
             if (entryText.trim() === '') {
@@ -103,10 +107,17 @@
                 text: entryText
             };
 
-            // Dynamically update HTML content
-            addEntryToDOM(entry);
+            // Save entry to localStorage
+            saveEntry(entry);
 
             document.getElementById('diaryEntry').value = '';
+        }
+
+        function saveEntry(entry) {
+            let entries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
+            entries.push(entry);
+            localStorage.setItem('diaryEntries', JSON.stringify(entries));
+            addEntryToDOM(entry);
         }
 
         function addEntryToDOM(entry) {
@@ -151,6 +162,11 @@
             dateDiv.appendChild(timeDiv);
             dateDiv.appendChild(entryText);
             dateDiv.appendChild(deleteEntryBtn);
+        }
+
+        function displayEntries() {
+            const entries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
+            entries.forEach(entry => addEntryToDOM(entry));
         }
 
         function toggleArchive() {
@@ -200,6 +216,9 @@
         }
 
         function deleteEntriesByDate(date) {
+            let entries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
+            entries = entries.filter(entry => entry.date !== date);
+            localStorage.setItem('diaryEntries', JSON.stringify(entries));
             const dateDiv = document.querySelector(`div[data-date="${date}"]`);
             if (dateDiv) {
                 dateDiv.remove();
@@ -207,6 +226,9 @@
         }
 
         function deleteEntry(date, time) {
+            let entries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
+            entries = entries.filter(entry => !(entry.date === date && entry.time === time));
+            localStorage.setItem('diaryEntries', JSON.stringify(entries));
             const dateDiv = document.querySelector(`div[data-date="${date}"]`);
             if (dateDiv) {
                 const timeDivs = dateDiv.querySelectorAll('.time');
