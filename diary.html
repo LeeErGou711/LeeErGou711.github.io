@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diary</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .entry {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        .entry h3, .entry h4 {
+            margin: 0;
+            cursor: pointer;
+        }
+        .time {
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+        }
+        .separator {
+            margin: 10px 0;
+            border-top: 1px dashed #ccc;
+        }
+        .btn {
+            background-color: orange;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        .delete-btn {
+            background-color: red;
+            display: none;
+        }
+        #searchContainer {
+            display: none;
+            margin: 10px 0;
+        }
+        #searchInput {
+            width: 70%;
+            padding: 5px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+        #entries {
+            max-height: 500px;
+            overflow-y: auto;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Diary</h1>
+        <textarea id="diaryEntry" placeholder="Write your diary here..."></textarea>
+        <button class="btn" onclick="uploadEntry()">Upload</button>
+        <button class="btn" onclick="toggleArchive()">Archive</button>
+        <button class="btn" onclick="toggleDeleteButtons()">Delete</button>
+        <button class="btn" onclick="toggleSearchBox()">Search</button>
+        <div id="searchContainer">
+            <input type="text" id="searchInput" placeholder="Enter date (e.g., 2024/6/22) or search content...">
+            <button class="btn" onclick="searchEntries()">Search</button>
+        </div>
+        <div id="entries"></div>
+    </div>
+
+    <script>
+        function uploadEntry() {
+            const entryText = document.getElementById('diaryEntry').value;
+            if (entryText.trim() === '') {
+                alert('Please write something first!');
+                return;
+            }
+
+            const date = new Date();
+            const dateString = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+            const timeString = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+            
+            const entry = {
+                date: dateString,
+                time: timeString,
+                text: entryText
+            };
+
+            // Dynamically update HTML content
+            addEntryToDOM(entry);
+
+            document.getElementById('diaryEntry').value = '';
+        }
+
+        function addEntryToDOM(entry) {
+            const entriesContainer = document.getElementById('entries');
+
+            let dateDiv = document.querySelector(`div[data-date="${entry.date}"]`);
+            if (!dateDiv) {
+                dateDiv = document.createElement('div');
+                dateDiv.classList.add('entry');
+                dateDiv.setAttribute('data-date', entry.date);
+
+                const dateTitle = document.createElement('h3');
+                dateTitle.textContent = entry.date;
+                dateTitle.onclick = () => toggleTimeEntries(entry.date);
+
+                const deleteDateBtn = document.createElement('button');
+                deleteDateBtn.textContent = 'Delete all entries for this day';
+                deleteDateBtn.classList.add('btn', 'delete-btn');
+                deleteDateBtn.onclick = () => deleteEntriesByDate(entry.date);
+
+                dateDiv.appendChild(dateTitle);
+                dateDiv.appendChild(deleteDateBtn);
+
+                entriesContainer.appendChild(dateDiv);
+            }
+
+            const timeDiv = document.createElement('div');
+            timeDiv.classList.add('time');
+            timeDiv.textContent = entry.time;
+            timeDiv.onclick = () => toggleEntryText(entry.date, entry.time);
+
+            const entryText = document.createElement('p');
+            entryText.textContent = entry.text;
+            entryText.style.display = 'none';
+
+            const deleteEntryBtn = document.createElement('button');
+            deleteEntryBtn.textContent = 'Delete this entry';
+            deleteEntryBtn.classList.add('btn', 'delete-btn');
+            deleteEntryBtn.style.display = 'none';
+            deleteEntryBtn.onclick = () => deleteEntry(entry.date, entry.time);
+
+            dateDiv.appendChild(timeDiv);
+            dateDiv.appendChild(entryText);
+            dateDiv.appendChild(deleteEntryBtn);
+        }
+
+        function toggleArchive() {
+            const entriesContainer = document.getElementById('entries');
+            if (entriesContainer.style.display === 'none') {
+                entriesContainer.style.display = 'block';
+            } else {
+                entriesContainer.style.display = 'none';
+            }
+        }
+
+        function toggleDeleteButtons() {
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.style.display = button.style.display === 'none' ? 'inline-block' : 'none';
+            });
+        }
+
+        function toggleSearchBox() {
+            const searchContainer = document.getElementById('searchContainer');
+            searchContainer.style.display = searchContainer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function toggleTimeEntries(date) {
+            const dateDiv = document.querySelector(`div[data-date="${date}"]`);
+            if (dateDiv) {
+                const timeEntries = dateDiv.querySelectorAll('.time, p, .delete-btn');
+                timeEntries.forEach(entry => {
+                    entry.style.display = entry.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+        }
+
+        function toggleEntryText(date, time) {
+            const dateDiv = document.querySelector(`div[data-date="${date}"]`);
+            if (dateDiv) {
+                const timeDivs = dateDiv.querySelectorAll('.time');
+                timeDivs.forEach(timeDiv => {
+                    if (timeDiv.textContent === time) {
+                        const entryText = timeDiv.nextElementSibling;
+                        const deleteBtn = entryText.nextElementSibling;
+                        entryText.style.display = entryText.style.display === 'none' ? 'block' : 'none';
+                        deleteBtn.style.display = deleteBtn.style.display === 'none' ? 'inline-block' : 'none';
+                    }
+                });
+            }
+        }
+
+        function deleteEntriesByDate(date) {
+            const dateDiv = document.querySelector(`div[data-date="${date}"]`);
+            if (dateDiv) {
+                dateDiv.remove();
+            }
+        }
+
+        function deleteEntry(date, time) {
+            const dateDiv = document.querySelector(`div[data-date="${date}"]`);
+            if (dateDiv) {
+                const timeDivs = dateDiv.querySelectorAll('.time');
+                timeDivs.forEach(timeDiv => {
+                    if (timeDiv.textContent === time) {
+                        timeDiv.nextElementSibling.remove(); // Remove entry text
+                        timeDiv.nextElementSibling.remove(); // Remove delete button
+                        timeDiv.remove(); // Remove time div
+                    }
+                });
+            }
+        }
+
+        function searchEntries() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const entries = document.querySelectorAll('.entry');
+            entries.forEach(entry => {
+                const date = entry.getAttribute('data-date');
+                const texts = entry.querySelectorAll('p');
+                let match = date.includes(searchInput);
+                texts.forEach(text => {
+                    if (text.textContent.toLowerCase().includes(searchInput)) {
+                        match = true;
+                    }
+                });
+                entry.style.display = match ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
